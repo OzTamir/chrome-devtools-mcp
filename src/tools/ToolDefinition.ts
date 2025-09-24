@@ -5,10 +5,10 @@
  */
 
 import z from 'zod';
-import { Dialog, ElementHandle, Page } from 'puppeteer-core';
-import type { FilterableResourceType } from '../utils/networkUtils.js';
-import { ToolCategories } from './categories.js';
-import { TraceResult } from '../trace-processing/parse.js';
+import {Dialog, ElementHandle, Page} from 'puppeteer-core';
+import type {FilterableResourceType} from '../utils/networkUtils.js';
+import {ToolCategories} from './categories.js';
+import {TraceResult} from '../trace-processing/parse.js';
 
 export interface ToolDefinition<
   Schema extends Zod.ZodRawShape = Zod.ZodRawShape,
@@ -79,7 +79,7 @@ export type Context = Readonly<{
   saveTemporaryFile(
     data: Uint8Array<ArrayBufferLike>,
     mimeType: 'image/png' | 'image/jpeg',
-  ): Promise<{ filename: string }>;
+  ): Promise<{filename: string}>;
   waitForEventsAfterAction(action: () => Promise<unknown>): Promise<void>;
 }>;
 

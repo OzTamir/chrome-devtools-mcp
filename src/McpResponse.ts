@@ -3,16 +3,16 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import type { ImageContentData, Response } from './tools/ToolDefinition.js';
-import type { McpContext } from './McpContext.js';
-import { ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js';
+import type {ImageContentData, Response} from './tools/ToolDefinition.js';
+import type {McpContext} from './McpContext.js';
+import {ImageContent, TextContent} from '@modelcontextprotocol/sdk/types.js';
 import {
   getFormattedHeaderValue,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
-import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
-import { formatConsoleEvent } from './formatters/consoleFormatter.js';
+import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
+import {formatConsoleEvent} from './formatters/consoleFormatter.js';
 import {
   paginateNetworkRequests,
   type NetworkRequestsListingOptions,
@@ -219,15 +219,14 @@ Call browser_handle_dialog to handle it before continuing.`);
         response.push('Invalid page token provided. Showing first page.');
       }
 
-      const { startIndex, endIndex, total } = paginationResult;
+      const {startIndex, endIndex, total} = paginationResult;
       if (total === 0) {
         if (paginationOptions?.requestType) {
           response.push('No requests found for the selected type(s).');
         } else {
           response.push('No requests found.');
         }
-      }
-      else {
+      } else {
         response.push(`Showing ${startIndex + 1}-${endIndex} of ${total}.`);
         for (const request of paginationResult.requests) {
           response.push(getShortDescriptionForRequest(request));

@@ -5,9 +5,9 @@
  */
 
 import z from 'zod';
-import { FILTERABLE_RESOURCE_TYPES } from '../utils/networkUtils.js';
-import { defineTool } from './ToolDefinition.js';
-import { ToolCategories } from './categories.js';
+import {FILTERABLE_RESOURCE_TYPES} from '../utils/networkUtils.js';
+import {defineTool} from './ToolDefinition.js';
+import {ToolCategories} from './categories.js';
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
