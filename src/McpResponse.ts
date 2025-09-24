@@ -3,16 +3,20 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import type {ImageContentData, Response} from './tools/ToolDefinition.js';
-import type {McpContext} from './McpContext.js';
-import {ImageContent, TextContent} from '@modelcontextprotocol/sdk/types.js';
+import type { ImageContentData, Response } from './tools/ToolDefinition.js';
+import type { McpContext } from './McpContext.js';
+import { ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js';
 import {
   getFormattedHeaderValue,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
-import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
-import {formatConsoleEvent} from './formatters/consoleFormatter.js';
+import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
+import { formatConsoleEvent } from './formatters/consoleFormatter.js';
+import {
+  paginateNetworkRequests,
+  type NetworkPaginationOptions,
+} from './utils/networkPagination.js';
 
 export class McpResponse implements Response {
   #includePages: boolean = false;
@@ -23,6 +27,7 @@ export class McpResponse implements Response {
   #textResponseLines: string[] = [];
   #formattedConsoleData?: string[];
   #images: ImageContentData[] = [];
+  #networkRequestsPaginationOptions?: NetworkPaginationOptions;
 
   setIncludePages(value: boolean): void {
     this.#includePages = value;
@@ -32,8 +37,31 @@ export class McpResponse implements Response {
     this.#includeSnapshot = value;
   }
 
-  setIncludeNetworkRequests(value: boolean): void {
+  setIncludeNetworkRequests(
+    value: boolean,
+    options?: { pageSize?: number; pageToken?: string | null },
+  ): void {
     this.#includeNetworkRequests = value;
+    if (!value) {
+      this.#networkRequestsPaginationOptions = undefined;
+      return;
+    }
+
+    if (!options) {
+      this.#networkRequestsPaginationOptions = undefined;
+      return;
+    }
+
+    const sanitizedOptions: NetworkPaginationOptions = {};
+    if (options.pageSize !== undefined) {
+      sanitizedOptions.pageSize = options.pageSize;
+    }
+    if (options.pageToken !== undefined) {
+      sanitizedOptions.pageToken = options.pageToken ?? undefined;
+    }
+
+    this.#networkRequestsPaginationOptions =
+      Object.keys(sanitizedOptions).length > 0 ? sanitizedOptions : undefined;
   }
 
   setIncludeConsoleData(value: boolean): void {
@@ -57,6 +85,10 @@ export class McpResponse implements Response {
   }
   get attachedNetworkRequestUrl(): string | undefined {
     return this.#attachedNetworkRequestUrl;
+  }
+  get networkRequestsPageToken(): string | undefined {
+    const token = this.#networkRequestsPaginationOptions?.pageToken;
+    return token ?? undefined;
   }
 
   appendResponseLine(value: string): void {
@@ -162,8 +194,25 @@ Call browser_handle_dialog to handle it before continuing.`);
       const requests = context.getNetworkRequests();
       response.push('## Network requests');
       if (requests.length) {
-        for (const request of requests) {
+        const paginationResult = paginateNetworkRequests(
+          requests,
+          this.#networkRequestsPaginationOptions,
+        );
+        if (paginationResult.invalidToken) {
+          response.push('Invalid page token provided. Showing first page.');
+        }
+        const { startIndex, endIndex } = paginationResult;
+        response.push(
+          `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
+        );
+        for (const request of paginationResult.requests) {
           response.push(getShortDescriptionForRequest(request));
+        }
+        if (paginationResult.nextPageToken) {
+          response.push(`Next: ${paginationResult.nextPageToken}`);
+        }
+        if (paginationResult.previousPageToken) {
+          response.push(`Prev: ${paginationResult.previousPageToken}`);
         }
       } else {
         response.push('No requests found.');

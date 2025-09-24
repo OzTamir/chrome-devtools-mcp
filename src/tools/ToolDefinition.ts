@@ -5,9 +5,9 @@
  */
 
 import z from 'zod';
-import {Dialog, ElementHandle, Page} from 'puppeteer-core';
-import {ToolCategories} from './categories.js';
-import {TraceResult} from '../trace-processing/parse.js';
+import { Dialog, ElementHandle, Page } from 'puppeteer-core';
+import { ToolCategories } from './categories.js';
+import { TraceResult } from '../trace-processing/parse.js';
 
 export interface ToolDefinition<
   Schema extends Zod.ZodRawShape = Zod.ZodRawShape,
@@ -42,7 +42,10 @@ export type ImageContentData = {
 export interface Response {
   appendResponseLine(value: string): void;
   setIncludePages(value: boolean): void;
-  setIncludeNetworkRequests(value: boolean): void;
+  setIncludeNetworkRequests(
+    value: boolean,
+    options?: { pageSize?: number; pageToken?: string | null },
+  ): void;
   setIncludeConsoleData(value: boolean): void;
   setIncludeSnapshot(value: boolean): void;
   attachImage(value: ImageContentData): void;
@@ -69,7 +72,7 @@ export type Context = Readonly<{
   saveTemporaryFile(
     data: Uint8Array<ArrayBufferLike>,
     mimeType: 'image/png' | 'image/jpeg',
-  ): Promise<{filename: string}>;
+  ): Promise<{ filename: string }>;
   waitForEventsAfterAction(action: () => Promise<unknown>): Promise<void>;
 }>;
 

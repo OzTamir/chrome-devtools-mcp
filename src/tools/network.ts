@@ -5,8 +5,8 @@
  */
 
 import z from 'zod';
-import {defineTool} from './ToolDefinition.js';
-import {ToolCategories} from './categories.js';
+import { defineTool } from './ToolDefinition.js';
+import { ToolCategories } from './categories.js';
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
@@ -15,9 +15,28 @@ export const listNetworkRequests = defineTool({
     category: ToolCategories.NETWORK,
     readOnlyHint: true,
   },
-  schema: {},
-  handler: async (_request, response) => {
-    response.setIncludeNetworkRequests(true);
+  schema: {
+    pageSize: z
+      .number()
+      .int()
+      .positive()
+      .max(100)
+      .optional()
+      .describe(
+        'Maximum number of requests to return. When omitted, returns all requests.',
+      ),
+    pageToken: z
+      .string()
+      .optional()
+      .describe(
+        'Opaque token representing the next page. Use the token returned by a previous call.',
+      ),
+  },
+  handler: async (request, response) => {
+    response.setIncludeNetworkRequests(true, {
+      pageSize: request.params.pageSize,
+      pageToken: request.params.pageToken ?? null,
+    });
   },
 });
 
