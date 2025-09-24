@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import puppeteer, {Browser} from 'puppeteer';
-import {HTTPRequest, HTTPResponse} from 'puppeteer-core';
-import {McpResponse} from '../src/McpResponse.js';
-import {McpContext} from '../src/McpContext.js';
+import puppeteer, { Browser } from 'puppeteer';
+import { HTTPRequest, HTTPResponse, type ResourceType } from 'puppeteer-core';
+import { McpResponse } from '../src/McpResponse.js';
+import { McpContext } from '../src/McpContext.js';
 import logger from 'debug';
 
 let browser: Browser | undefined;
 
 export async function withBrowser(
   cb: (response: McpResponse, context: McpContext) => Promise<void>,
-  options: {debug?: boolean} = {},
+  options: { debug?: boolean } = {},
 ) {
-  const {debug = false} = options;
+  const { debug = false } = options;
   if (!browser) {
     browser = await puppeteer.launch({
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
@@ -44,11 +44,13 @@ export function getMockRequest(
     method?: string;
     response?: HTTPResponse;
     failure?: HTTPRequest['failure'];
+    resourceType?: ResourceType;
+    url?: string;
   } = {},
 ): HTTPRequest {
   return {
     url() {
-      return 'http://example.com';
+      return options.url ?? 'http://example.com';
     },
     method() {
       return options.method ?? 'GET';
@@ -66,6 +68,9 @@ export function getMockRequest(
     },
     redirectChain(): HTTPRequest[] {
       return [];
+    },
+    resourceType() {
+      return options.resourceType ?? 'document';
     },
   } as HTTPRequest;
 }

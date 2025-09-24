@@ -5,6 +5,7 @@
  */
 
 import z from 'zod';
+import { FILTERABLE_RESOURCE_TYPES } from '../utils/networkUtils.js';
 import { defineTool } from './ToolDefinition.js';
 import { ToolCategories } from './categories.js';
 
@@ -31,11 +32,18 @@ export const listNetworkRequests = defineTool({
       .describe(
         'Opaque token representing the next page. Use the token returned by a previous call.',
       ),
+    requestType: z
+      .enum(FILTERABLE_RESOURCE_TYPES)
+      .optional()
+      .describe(
+        `Type of request to return. When omitted, returns all requests. Available types are: ${FILTERABLE_RESOURCE_TYPES.join(', ')}.`,
+      ),
   },
   handler: async (request, response) => {
     response.setIncludeNetworkRequests(true, {
       pageSize: request.params.pageSize,
       pageToken: request.params.pageToken ?? null,
+      requestType: request.params.requestType ?? null,
     });
   },
 });

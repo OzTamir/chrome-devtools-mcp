@@ -6,6 +6,7 @@
 
 import z from 'zod';
 import { Dialog, ElementHandle, Page } from 'puppeteer-core';
+import type { FilterableResourceType } from '../utils/networkUtils.js';
 import { ToolCategories } from './categories.js';
 import { TraceResult } from '../trace-processing/parse.js';
 
@@ -39,12 +40,18 @@ export type ImageContentData = {
   mimeType: string;
 };
 
+export type NetworkRequestsOptions = {
+  pageSize?: number;
+  pageToken?: string | null;
+  requestType?: FilterableResourceType | FilterableResourceType[] | null;
+};
+
 export interface Response {
   appendResponseLine(value: string): void;
   setIncludePages(value: boolean): void;
   setIncludeNetworkRequests(
     value: boolean,
-    options?: { pageSize?: number; pageToken?: string | null },
+    options?: NetworkRequestsOptions,
   ): void;
   setIncludeConsoleData(value: boolean): void;
   setIncludeSnapshot(value: boolean): void;

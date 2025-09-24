@@ -15,8 +15,9 @@ import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
 import { formatConsoleEvent } from './formatters/consoleFormatter.js';
 import {
   paginateNetworkRequests,
-  type NetworkPaginationOptions,
-} from './utils/networkPagination.js';
+  type NetworkRequestsListingOptions,
+  sanitizeRequestTypeFilter,
+} from './utils/networkUtils.js';
 
 export class McpResponse implements Response {
   #includePages: boolean = false;
@@ -27,7 +28,7 @@ export class McpResponse implements Response {
   #textResponseLines: string[] = [];
   #formattedConsoleData?: string[];
   #images: ImageContentData[] = [];
-  #networkRequestsPaginationOptions?: NetworkPaginationOptions;
+  #networkRequestsPaginationOptions?: NetworkRequestsListingOptions;
 
   setIncludePages(value: boolean): void {
     this.#includePages = value;
@@ -39,7 +40,7 @@ export class McpResponse implements Response {
 
   setIncludeNetworkRequests(
     value: boolean,
-    options?: { pageSize?: number; pageToken?: string | null },
+    options?: NetworkRequestsListingOptions,
   ): void {
     this.#includeNetworkRequests = value;
     if (!value) {
@@ -52,12 +53,20 @@ export class McpResponse implements Response {
       return;
     }
 
-    const sanitizedOptions: NetworkPaginationOptions = {};
+    const sanitizedOptions: NetworkRequestsListingOptions = {};
     if (options.pageSize !== undefined) {
       sanitizedOptions.pageSize = options.pageSize;
     }
     if (options.pageToken !== undefined) {
       sanitizedOptions.pageToken = options.pageToken ?? undefined;
+    }
+    if (options.requestType !== undefined) {
+      const sanitizedRequestType = sanitizeRequestTypeFilter(
+        options.requestType,
+      );
+      if (sanitizedRequestType !== undefined) {
+        sanitizedOptions.requestType = sanitizedRequestType;
+      }
     }
 
     this.#networkRequestsPaginationOptions =
@@ -193,18 +202,33 @@ Call browser_handle_dialog to handle it before continuing.`);
     if (this.#includeNetworkRequests) {
       const requests = context.getNetworkRequests();
       response.push('## Network requests');
-      if (requests.length) {
-        const paginationResult = paginateNetworkRequests(
-          requests,
-          this.#networkRequestsPaginationOptions,
-        );
-        if (paginationResult.invalidToken) {
-          response.push('Invalid page token provided. Showing first page.');
+      const paginationOptions = this.#networkRequestsPaginationOptions;
+      const paginationResult = paginateNetworkRequests(
+        requests,
+        paginationOptions,
+      );
+
+      if (paginationResult.appliedRequestType) {
+        const summary = Array.isArray(paginationResult.appliedRequestType)
+          ? paginationResult.appliedRequestType.join(', ')
+          : paginationResult.appliedRequestType;
+        response.push(`Filtered by type: ${summary}`);
+      }
+
+      if (paginationResult.invalidToken) {
+        response.push('Invalid page token provided. Showing first page.');
+      }
+
+      const { startIndex, endIndex, total } = paginationResult;
+      if (total === 0) {
+        if (paginationOptions?.requestType) {
+          response.push('No requests found for the selected type(s).');
+        } else {
+          response.push('No requests found.');
         }
-        const { startIndex, endIndex } = paginationResult;
-        response.push(
-          `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
-        );
+      }
+      else {
+        response.push(`Showing ${startIndex + 1}-${endIndex} of ${total}.`);
         for (const request of paginationResult.requests) {
           response.push(getShortDescriptionForRequest(request));
         }
@@ -214,8 +238,6 @@ Call browser_handle_dialog to handle it before continuing.`);
         if (paginationResult.previousPageToken) {
           response.push(`Prev: ${paginationResult.previousPageToken}`);
         }
-      } else {
-        response.push('No requests found.');
       }
     }
 

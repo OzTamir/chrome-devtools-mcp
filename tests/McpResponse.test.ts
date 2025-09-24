@@ -265,7 +265,9 @@ Log>`),
 describe('McpResponse network pagination', () => {
   it('returns all requests when pagination is not provided', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 5 }, () => getMockRequest());
+      const requests = Array.from({ length: 5 }, (_, idx) =>
+        getMockRequest({ method: `GET-${idx}` }),
+      );
       context.getNetworkRequests = () => requests;
       response.setIncludeNetworkRequests(true);
       const result = await response.handle('test', context);
@@ -313,7 +315,9 @@ describe('McpResponse network pagination', () => {
 
   it('handles invalid token by showing first page', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 5 }, () => getMockRequest());
+      const requests = Array.from({ length: 5 }, (_, idx) =>
+        getMockRequest({ method: `GET-${idx}` }),
+      );
       context.getNetworkRequests = () => requests;
       response.setIncludeNetworkRequests(true, {
         pageSize: 2,
@@ -325,6 +329,102 @@ describe('McpResponse network pagination', () => {
         text.includes('Invalid page token provided. Showing first page.'),
       );
       assert.ok(text.includes('Showing 1-2 of 5.'));
+    });
+  });
+});
+
+describe('McpResponse network filtering', () => {
+  it('filters requests by provided type', async () => {
+    await withBrowser(async (response, context) => {
+      const requests = [
+        getMockRequest({
+          resourceType: 'document',
+          method: 'GET',
+          url: 'https://example.com/document',
+        }),
+        getMockRequest({
+          resourceType: 'image',
+          method: 'GET',
+          url: 'https://example.com/image.png',
+        }),
+        getMockRequest({
+          resourceType: 'xhr',
+          method: 'GET',
+          url: 'https://example.com/api',
+        }),
+      ];
+
+      context.getNetworkRequests = () => requests;
+      response.setIncludeNetworkRequests(true, {
+        requestType: 'image',
+      });
+
+      const result = await response.handle('test', context);
+      const text = result[0].text as string;
+
+      assert.ok(text.includes('Filtered by type: image'));
+      assert.ok(text.includes('Showing 1-1 of 1.'));
+      assert.ok(text.includes('https://example.com/image.png'));
+      assert.ok(!text.includes('https://example.com/document'));
+      assert.ok(!text.includes('https://example.com/api'));
+    });
+  });
+
+  it('supports array request type filters', async () => {
+    await withBrowser(async (response, context) => {
+      const requests = [
+        getMockRequest({
+          resourceType: 'document',
+          method: 'GET',
+          url: 'https://example.com/document',
+        }),
+        getMockRequest({
+          resourceType: 'image',
+          method: 'GET',
+          url: 'https://example.com/image.png',
+        }),
+        getMockRequest({
+          resourceType: 'script',
+          method: 'GET',
+          url: 'https://example.com/script.js',
+        }),
+      ];
+
+      context.getNetworkRequests = () => requests;
+      response.setIncludeNetworkRequests(true, {
+        requestType: ['image', 'script'],
+      });
+
+      const result = await response.handle('test', context);
+      const text = result[0].text as string;
+
+      assert.ok(text.includes('Filtered by type: image, script'));
+      assert.ok(text.includes('Showing 1-2 of 2.'));
+      assert.ok(text.includes('https://example.com/image.png'));
+      assert.ok(text.includes('https://example.com/script.js'));
+      assert.ok(!text.includes('https://example.com/document'));
+    });
+  });
+
+  it('returns message when no matching requests exist', async () => {
+    await withBrowser(async (response, context) => {
+      const requests = [
+        getMockRequest({
+          resourceType: 'document',
+          url: 'https://example.com/document',
+        }),
+      ];
+
+      context.getNetworkRequests = () => requests;
+      response.setIncludeNetworkRequests(true, {
+        requestType: 'image',
+      });
+
+      const result = await response.handle('test', context);
+      const text = result[0].text as string;
+
+      assert.ok(text.includes('Filtered by type: image'));
+      assert.ok(text.includes('No requests found for the selected type(s).'));
     });
   });
 });
