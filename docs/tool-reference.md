@@ -262,7 +262,11 @@
 
 **Description:** List all requests for the currently selected page
 
-**Parameters:** None
+**Parameters:**
+
+- **pageSize** (number) _(optional)_: Maximum number of requests to return. When omitted, returns all requests.
+- **pageToken** (string) _(optional)_: Opaque token representing the next page. Use the token returned by a previous call.
+- **requestType** (enum) _(optional)_: Type of request to return. When omitted, returns all requests. Available types are: Document, Stylesheet, Image, Media, Font, Script, TextTrack, XHR, Fetch, EventSource, WebSocket, Manifest, SignedExchange, Ping, CSPViolationReport, Preflight, Other.
 
 ---
 
