@@ -3,10 +3,10 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import { describe, it } from 'node:test';
+import {describe, it} from 'node:test';
 import assert from 'assert';
 
-import { getMockRequest, html, withBrowser } from './utils.js';
+import {getMockRequest, html, withBrowser} from './utils.js';
 
 describe('McpResponse', () => {
   it('list pages', async () => {
@@ -120,7 +120,7 @@ Navigation timeout set to 100000 ms`,
   });
   it('adds image when image is attached', async () => {
     await withBrowser(async (response, context) => {
-      response.attachImage({ data: 'imageBase64', mimeType: 'image/png' });
+      response.attachImage({data: 'imageBase64', mimeType: 'image/png'});
       const result = await response.handle('test', context);
       assert.strictEqual(result[0].text, `# test response`);
       assert.equal(result[1].type, 'image');
@@ -267,7 +267,7 @@ Log>`),
 describe('McpResponse network pagination', () => {
   it('returns all requests when pagination is not provided', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 5 }, () => getMockRequest());
+      const requests = Array.from({length: 5}, () => getMockRequest());
       context.getNetworkRequests = () => requests;
       response.setIncludeNetworkRequests(true);
       const result = await response.handle('test', context);
@@ -280,13 +280,13 @@ describe('McpResponse network pagination', () => {
 
   it('returns first page by default', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 30 }, (_, idx) =>
-        getMockRequest({ method: `GET-${idx}` }),
+      const requests = Array.from({length: 30}, (_, idx) =>
+        getMockRequest({method: `GET-${idx}`}),
       );
       context.getNetworkRequests = () => {
         return requests;
       };
-      response.setIncludeNetworkRequests(true, { pageSize: 10 });
+      response.setIncludeNetworkRequests(true, {pageSize: 10});
       const result = await response.handle('test', context);
       const text = (result[0].text as string).toString();
       assert.ok(text.includes('Showing 1-10 of 30.'));
@@ -297,8 +297,8 @@ describe('McpResponse network pagination', () => {
 
   it('returns subsequent page when token provided', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 25 }, (_, idx) =>
-        getMockRequest({ method: `GET-${idx}` }),
+      const requests = Array.from({length: 25}, (_, idx) =>
+        getMockRequest({method: `GET-${idx}`}),
       );
       context.getNetworkRequests = () => requests;
       response.setIncludeNetworkRequests(true, {
@@ -315,7 +315,7 @@ describe('McpResponse network pagination', () => {
 
   it('handles invalid token by showing first page', async () => {
     await withBrowser(async (response, context) => {
-      const requests = Array.from({ length: 5 }, () => getMockRequest());
+      const requests = Array.from({length: 5}, () => getMockRequest());
       context.getNetworkRequests = () => requests;
       response.setIncludeNetworkRequests(true, {
         pageSize: 2,
