@@ -13,7 +13,7 @@ import {
   SerializedAXNode,
   PredefinedNetworkConditions,
 } from 'puppeteer-core';
-import {Context} from './tools/ToolDefinition.js';
+import {CLOSE_PAGE_ERROR, Context} from './tools/ToolDefinition.js';
 import {Debugger} from 'debug';
 import {NetworkCollector, PageCollector} from './PageCollector.js';
 import fs from 'node:fs/promises';
@@ -130,6 +130,14 @@ export class McpContext implements Context {
     this.#networkCollector.addPage(page);
     this.#consoleCollector.addPage(page);
     return page;
+  }
+  async closePage(pageIdx: number): Promise<void> {
+    if (this.#pages.length === 1) {
+      throw new Error(CLOSE_PAGE_ERROR);
+    }
+    const page = this.getPageByIdx(pageIdx);
+    this.setSelectedPageIdx(0);
+    await page.close({runBeforeUnload: false});
   }
 
   getNetworkRequestByUrl(url: string): HTTPRequest {

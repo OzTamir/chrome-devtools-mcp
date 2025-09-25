@@ -27,7 +27,7 @@ MCP clients.
 
 ## Requirements
 
-- [Node.js 22](https://nodejs.org/) or newer.
+- [Node.js 22.12.0](https://nodejs.org/) or newer.
 - [Chrome](https://www.google.com/chrome/) current stable version or newer.
 - [npm](https://www.npmjs.com/).
 
@@ -110,6 +110,14 @@ Go to `Cursor Settings` -> `MCP` -> `New MCP Server`. Use the config provided ab
   <summary>Gemini Code Assist</summary>
   Follow the <a href="https://cloud.google.com/gemini/docs/codeassist/use-agentic-chat-pair-programmer#configure-mcp-servers">configure MCP guide</a>
   using the standard config from above.
+</details>
+
+<details>
+  <summary>JetBrains AI Assistant & Junie</summary>
+
+Go to `Settings | Tools | AI Assistant | Model Context Protocol (MCP)` -> `Add`. Use the config provided above.
+The same way chrome-devtools-mcp can be configured for JetBrains Junie in `Settings | Tools | Junie | MCP Settings` -> `Add`. Use the config provided above.
+
 </details>
 
 ### Your first prompt
@@ -203,10 +211,10 @@ Pass them via the `args` property in the JSON configuration. For example:
     "chrome-devtools": {
       "command": "npx",
       "args": [
-        "chrome-devtools-mcp@latest"
+        "chrome-devtools-mcp@latest",
         "--channel=canary",
         "--headless=true",
-        "--isolated=true",
+        "--isolated=true"
       ]
     }
   }

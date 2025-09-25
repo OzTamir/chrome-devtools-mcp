@@ -65,6 +65,7 @@ export type Context = Readonly<{
   clearDialog(): void;
   getPageByIdx(idx: number): Page;
   newPage(): Promise<Page>;
+  closePage(pageIdx: number): Promise<void>;
   setSelectedPageIdx(idx: number): void;
   getElementByUid(uid: string): Promise<ElementHandle<Element>>;
   setNetworkConditions(conditions: string | null): void;
@@ -81,3 +82,6 @@ export function defineTool<Schema extends Zod.ZodRawShape>(
 ) {
   return definition;
 }
+
+export const CLOSE_PAGE_ERROR =
+  'The last open page cannot be closed. It is fine to keep it open.';

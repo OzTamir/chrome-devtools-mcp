@@ -53,6 +53,18 @@ describe('pages', () => {
         assert.ok(response.includePages);
       });
     });
+    it('cannot close the last page', async () => {
+      await withBrowser(async (response, context) => {
+        const page = context.getSelectedPage();
+        await closePage.handler({params: {pageIdx: 0}}, response, context);
+        assert.deepStrictEqual(
+          response.responseLines[0],
+          `The last open page cannot be closed. It is fine to keep it open.`,
+        );
+        assert.ok(response.includePages);
+        assert.ok(!page.isClosed());
+      });
+    });
   });
   describe('browser_select_page', () => {
     it('selects a page', async () => {

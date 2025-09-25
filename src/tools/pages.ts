@@ -5,7 +5,7 @@
  */
 
 import z from 'zod';
-import {defineTool} from './ToolDefinition.js';
+import {CLOSE_PAGE_ERROR, defineTool} from './ToolDefinition.js';
 import {ToolCategories} from './categories.js';
 
 export const listPages = defineTool({
@@ -45,7 +45,7 @@ export const selectPage = defineTool({
 
 export const closePage = defineTool({
   name: 'close_page',
-  description: `Closes the page by its index.`,
+  description: `Closes the page by its index. The last open page cannot be closed.`,
   annotations: {
     category: ToolCategories.NAVIGATION_AUTOMATION,
     readOnlyHint: false,
@@ -58,9 +58,15 @@ export const closePage = defineTool({
       ),
   },
   handler: async (request, response, context) => {
-    const page = context.getPageByIdx(request.params.pageIdx);
-    context.setSelectedPageIdx(0);
-    await page.close({runBeforeUnload: false});
+    try {
+      await context.closePage(request.params.pageIdx);
+    } catch (err) {
+      if (err.message === CLOSE_PAGE_ERROR) {
+        response.appendResponseLine(err.message);
+      } else {
+        throw err;
+      }
+    }
     response.setIncludePages(true);
   },
 });
