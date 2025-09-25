@@ -3,10 +3,10 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import { describe, it } from 'node:test';
+import {describe, it} from 'node:test';
 import assert from 'assert';
 
-import { withBrowser } from '../utils.js';
+import {withBrowser} from '../utils.js';
 import {
   getNetworkRequest,
   listNetworkRequests,
@@ -16,7 +16,7 @@ describe('network', () => {
   describe('network_list_requests', () => {
     it('list requests', async () => {
       await withBrowser(async (response, context) => {
-        await listNetworkRequests.handler({ params: {} }, response, context);
+        await listNetworkRequests.handler({params: {}}, response, context);
         assert.ok(response.includeNetworkRequests);
         assert.strictEqual(response.networkRequestsPageToken, undefined);
       });
@@ -28,7 +28,7 @@ describe('network', () => {
         const page = await context.getSelectedPage();
         await page.goto('data:text/html,<div>Hello MCP</div>');
         await getNetworkRequest.handler(
-          { params: { url: 'data:text/html,<div>Hello MCP</div>' } },
+          {params: {url: 'data:text/html,<div>Hello MCP</div>'}},
           response,
           context,
         );

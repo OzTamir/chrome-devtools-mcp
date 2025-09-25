@@ -3,16 +3,16 @@
  * Copyright 2025 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import type { ImageContentData, Response } from './tools/ToolDefinition.js';
-import type { McpContext } from './McpContext.js';
-import { ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js';
+import type {ImageContentData, Response} from './tools/ToolDefinition.js';
+import type {McpContext} from './McpContext.js';
+import {ImageContent, TextContent} from '@modelcontextprotocol/sdk/types.js';
 import {
   getFormattedHeaderValue,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
-import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
-import { formatConsoleEvent } from './formatters/consoleFormatter.js';
+import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
+import {formatConsoleEvent} from './formatters/consoleFormatter.js';
 import {
   paginateNetworkRequests,
   type NetworkPaginationOptions,
@@ -39,7 +39,7 @@ export class McpResponse implements Response {
 
   setIncludeNetworkRequests(
     value: boolean,
-    options?: { pageSize?: number; pageToken?: string | null },
+    options?: {pageSize?: number; pageToken?: string | null},
   ): void {
     this.#includeNetworkRequests = value;
     if (!value) {
@@ -201,7 +201,7 @@ Call browser_handle_dialog to handle it before continuing.`);
         if (paginationResult.invalidToken) {
           response.push('Invalid page token provided. Showing first page.');
         }
-        const { startIndex, endIndex } = paginationResult;
+        const {startIndex, endIndex} = paginationResult;
         response.push(
           `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
         );
