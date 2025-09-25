@@ -264,8 +264,8 @@
 
 **Parameters:**
 
+- **pageIdx** (integer) _(optional)_: Page number to return (0-based). When omitted, returns the first page.
 - **pageSize** (integer) _(optional)_: Maximum number of requests to return. When omitted, returns all requests.
-- **pageToken** (string) _(optional)_: Opaque token representing the next page. Use the token returned by a previous call.
 
 ---
 

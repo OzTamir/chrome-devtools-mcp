@@ -6,16 +6,18 @@
 
 export type PaginationOptions = {
   pageSize?: number;
-  pageToken?: string;
+  pageIdx?: number;
 };
 
 export type PaginationResult<TItem> = {
   items: readonly TItem[];
-  nextPageToken?: string;
-  previousPageToken?: string;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
   startIndex: number;
   endIndex: number;
-  invalidToken: boolean;
+  invalidPage: boolean;
 };
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -29,59 +31,57 @@ export function paginate<TItem>(
   if (!options || noPaginationOptions(options)) {
     return {
       items,
-      nextPageToken: undefined,
-      previousPageToken: undefined,
+      currentPage: 0,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
       startIndex: 0,
       endIndex: total,
-      invalidToken: false,
+      invalidPage: false,
     };
   }
 
   const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
-  const {startIndex, invalidToken} = resolveStartIndex(
-    options.pageToken,
-    total,
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const {currentPage, invalidPage} = resolvePageIndex(
+    options.pageIdx,
+    totalPages,
   );
 
+  const startIndex = currentPage * pageSize;
   const pageItems = items.slice(startIndex, startIndex + pageSize);
   const endIndex = startIndex + pageItems.length;
 
-  const nextPageToken = endIndex < total ? String(endIndex) : undefined;
-  const previousPageToken =
-    startIndex > 0 ? String(Math.max(startIndex - pageSize, 0)) : undefined;
-
   return {
     items: pageItems,
-    nextPageToken,
-    previousPageToken,
+    currentPage,
+    totalPages,
+    hasNextPage: currentPage < totalPages - 1,
+    hasPreviousPage: currentPage > 0,
     startIndex,
     endIndex,
-    invalidToken,
+    invalidPage,
   };
 }
 
 function noPaginationOptions(options: PaginationOptions): boolean {
-  return (
-    options.pageSize === undefined &&
-    (options.pageToken === undefined || options.pageToken === null)
-  );
+  return options.pageSize === undefined && options.pageIdx === undefined;
 }
 
-function resolveStartIndex(
-  pageToken: string | undefined,
-  total: number,
+function resolvePageIndex(
+  pageIdx: number | undefined,
+  totalPages: number,
 ): {
-  startIndex: number;
-  invalidToken: boolean;
+  currentPage: number;
+  invalidPage: boolean;
 } {
-  if (pageToken === undefined || pageToken === null) {
-    return {startIndex: 0, invalidToken: false};
+  if (pageIdx === undefined) {
+    return {currentPage: 0, invalidPage: false};
   }
 
-  const parsed = Number.parseInt(pageToken, 10);
-  if (Number.isNaN(parsed) || parsed < 0 || parsed >= total) {
-    return {startIndex: 0, invalidToken: true};
+  if (pageIdx < 0 || pageIdx >= totalPages) {
+    return {currentPage: 0, invalidPage: true};
   }
 
-  return {startIndex: parsed, invalidToken: false};
+  return {currentPage: pageIdx, invalidPage: false};
 }

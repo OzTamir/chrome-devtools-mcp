@@ -36,7 +36,7 @@ export class McpResponse implements Response {
 
   setIncludeNetworkRequests(
     value: boolean,
-    options?: {pageSize?: number; pageToken?: string | null},
+    options?: {pageSize?: number; pageIdx?: number},
   ): void {
     this.#includeNetworkRequests = value;
     if (!value || !options) {
@@ -46,7 +46,7 @@ export class McpResponse implements Response {
 
     this.#networkRequestsPaginationOptions = {
       pageSize: options.pageSize,
-      pageToken: options.pageToken ?? undefined,
+      pageIdx: options.pageIdx,
     };
   }
 
@@ -72,9 +72,8 @@ export class McpResponse implements Response {
   get attachedNetworkRequestUrl(): string | undefined {
     return this.#attachedNetworkRequestUrl;
   }
-  get networkRequestsPageToken(): string | undefined {
-    const token = this.#networkRequestsPaginationOptions?.pageToken;
-    return token ?? undefined;
+  get networkRequestsPageIdx(): number | undefined {
+    return this.#networkRequestsPaginationOptions?.pageIdx;
   }
 
   appendResponseLine(value: string): void {
@@ -184,21 +183,22 @@ Call browser_handle_dialog to handle it before continuing.`);
           requests,
           this.#networkRequestsPaginationOptions,
         );
-        if (paginationResult.invalidToken) {
-          response.push('Invalid page token provided. Showing first page.');
+        if (paginationResult.invalidPage) {
+          response.push('Invalid page number provided. Showing first page.');
         }
 
-        const {startIndex, endIndex} = paginationResult;
+        const {startIndex, endIndex, currentPage, totalPages} =
+          paginationResult;
         response.push(
-          `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
+          `Showing ${startIndex + 1}-${endIndex} of ${requests.length} (Page ${currentPage + 1} of ${totalPages}).`,
         );
 
         if (this.#networkRequestsPaginationOptions) {
-          if (paginationResult.nextPageToken) {
-            response.push(`Next: ${paginationResult.nextPageToken}`);
+          if (paginationResult.hasNextPage) {
+            response.push(`Next page: ${currentPage + 1}`);
           }
-          if (paginationResult.previousPageToken) {
-            response.push(`Prev: ${paginationResult.previousPageToken}`);
+          if (paginationResult.hasPreviousPage) {
+            response.push(`Previous page: ${currentPage - 1}`);
           }
         }
 
