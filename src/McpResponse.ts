@@ -13,10 +13,7 @@ import {
 } from './formatters/networkFormatter.js';
 import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
 import { formatConsoleEvent } from './formatters/consoleFormatter.js';
-import {
-  paginateNetworkRequests,
-  type NetworkPaginationOptions,
-} from './utils/networkPagination.js';
+import { paginate, type PaginationOptions } from './utils/pagination.js';
 
 export class McpResponse implements Response {
   #includePages: boolean = false;
@@ -27,7 +24,7 @@ export class McpResponse implements Response {
   #textResponseLines: string[] = [];
   #formattedConsoleData?: string[];
   #images: ImageContentData[] = [];
-  #networkRequestsPaginationOptions?: NetworkPaginationOptions;
+  #networkRequestsPaginationOptions?: PaginationOptions;
 
   setIncludePages(value: boolean): void {
     this.#includePages = value;
@@ -183,25 +180,26 @@ Call browser_handle_dialog to handle it before continuing.`);
       const requests = context.getNetworkRequests();
       response.push('## Network requests');
       if (requests.length) {
-        const paginationResult = paginateNetworkRequests(
-          requests,
-          this.#networkRequestsPaginationOptions,
-        );
+        const paginationResult = paginate(requests, this.#networkRequestsPaginationOptions);
         if (paginationResult.invalidToken) {
           response.push('Invalid page token provided. Showing first page.');
         }
-        const { startIndex, endIndex } = paginationResult;
-        response.push(
-          `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
-        );
-        for (const request of paginationResult.requests) {
+
+        if (this.#networkRequestsPaginationOptions) {
+          const { startIndex, endIndex } = paginationResult;
+          response.push(
+            `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
+          );
+          if (paginationResult.nextPageToken) {
+            response.push(`Next: ${paginationResult.nextPageToken}`);
+          }
+          if (paginationResult.previousPageToken) {
+            response.push(`Prev: ${paginationResult.previousPageToken}`);
+          }
+        }
+
+        for (const request of paginationResult.items) {
           response.push(getShortDescriptionForRequest(request));
-        }
-        if (paginationResult.nextPageToken) {
-          response.push(`Next: ${paginationResult.nextPageToken}`);
-        }
-        if (paginationResult.previousPageToken) {
-          response.push(`Prev: ${paginationResult.previousPageToken}`);
         }
       } else {
         response.push('No requests found.');

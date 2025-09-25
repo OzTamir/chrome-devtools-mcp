@@ -5,8 +5,8 @@
  */
 
 import z from 'zod';
-import {defineTool} from './ToolDefinition.js';
-import {ToolCategories} from './categories.js';
+import { defineTool } from './ToolDefinition.js';
+import { ToolCategories } from './categories.js';
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
@@ -20,7 +20,6 @@ export const listNetworkRequests = defineTool({
       .number()
       .int()
       .positive()
-      .max(100)
       .optional()
       .describe(
         'Maximum number of requests to return. When omitted, returns all requests.',
