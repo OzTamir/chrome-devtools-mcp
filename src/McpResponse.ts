@@ -185,11 +185,12 @@ Call browser_handle_dialog to handle it before continuing.`);
           response.push('Invalid page token provided. Showing first page.');
         }
 
+        const { startIndex, endIndex } = paginationResult;
+        response.push(
+          `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
+        );
+
         if (this.#networkRequestsPaginationOptions) {
-          const { startIndex, endIndex } = paginationResult;
-          response.push(
-            `Showing ${startIndex + 1}-${endIndex} of ${requests.length}.`,
-          );
           if (paginationResult.nextPageToken) {
             response.push(`Next: ${paginationResult.nextPageToken}`);
           }
