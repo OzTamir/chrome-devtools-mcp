@@ -10,27 +10,30 @@ import z from 'zod';
 import { ToolCategories } from './categories.js';
 import { defineTool } from './ToolDefinition.js';
 
-const FILTERABLE_RESOURCE_TYPES = [
-  'document',
-  'stylesheet',
-  'image',
-  'media',
-  'font',
-  'script',
-  'texttrack',
-  'xhr',
-  'fetch',
-  'prefetch',
-  'eventsource',
-  'websocket',
-  'manifest',
-  'signedexchange',
-  'ping',
-  'cspviolationreport',
-  'preflight',
-  'fedcm',
-  'other',
-] as const satisfies readonly ResourceType[];
+const FILTERABLE_RESOURCE_TYPES: readonly [
+  ResourceType,
+  ...ResourceType[],
+] = [
+    'document',
+    'stylesheet',
+    'image',
+    'media',
+    'font',
+    'script',
+    'texttrack',
+    'xhr',
+    'fetch',
+    'prefetch',
+    'eventsource',
+    'websocket',
+    'manifest',
+    'signedexchange',
+    'ping',
+    'cspviolationreport',
+    'preflight',
+    'fedcm',
+    'other',
+  ];
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
@@ -58,12 +61,7 @@ export const listNetworkRequests = defineTool({
       ),
     resourceTypes: z
       .array(
-        z.enum(
-          FILTERABLE_RESOURCE_TYPES as unknown as [
-            ResourceType,
-            ...ResourceType[],
-          ],
-        ),
+        z.enum(FILTERABLE_RESOURCE_TYPES),
       )
       .optional()
       .describe(
