@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type {ResourceType} from 'puppeteer-core';
+import type { ResourceType } from 'puppeteer-core';
 import z from 'zod';
 
-import {ToolCategories} from './categories.js';
-import {defineTool} from './ToolDefinition.js';
+import { ToolCategories } from './categories.js';
+import { defineTool } from './ToolDefinition.js';
 
 const FILTERABLE_RESOURCE_TYPES = [
   'document',
@@ -56,7 +56,7 @@ export const listNetworkRequests = defineTool({
       .describe(
         'Page number to return (0-based). When omitted, returns the first page.',
       ),
-    resourceType: z
+    resourceTypes: z
       .array(
         z.enum(
           FILTERABLE_RESOURCE_TYPES as unknown as [
@@ -74,7 +74,7 @@ export const listNetworkRequests = defineTool({
     response.setIncludeNetworkRequests(true, {
       pageSize: request.params.pageSize,
       pageIdx: request.params.pageIdx,
-      resourceTypes: request.params.resourceType,
+      resourceTypes: request.params.resourceTypes,
     });
   },
 });
