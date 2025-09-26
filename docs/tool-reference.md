@@ -266,7 +266,7 @@
 
 - **pageIdx** (integer) _(optional)_: Page number to return (0-based). When omitted, returns the first page.
 - **pageSize** (integer) _(optional)_: Maximum number of requests to return. When omitted, returns all requests.
-- **resourceType** (array) _(optional)_: Filter requests by resource type. When omitted, returns all requests.
+- **resourceType** (array) _(optional)_: Filter requests to only return requests of the specified resource types. When omitted, returns all requests.
 
 ---
 
