@@ -10,7 +10,7 @@ import z from 'zod';
 import { ToolCategories } from './categories.js';
 import { defineTool } from './ToolDefinition.js';
 
-export const FILTERABLE_RESOURCE_TYPES = [
+const FILTERABLE_RESOURCE_TYPES = [
   'document',
   'stylesheet',
   'image',
