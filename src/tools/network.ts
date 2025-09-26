@@ -65,7 +65,7 @@ export const listNetworkRequests = defineTool({
       )
       .optional()
       .describe(
-        'Filter requests to only return requests of the specified resource types. When omitted, returns all requests.',
+        'Filter requests to only return requests of the specified resource types. When omitted or empty, returns all requests.',
       ),
   },
   handler: async (request, response) => {
