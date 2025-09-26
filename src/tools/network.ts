@@ -4,10 +4,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { ResourceType } from 'puppeteer-core';
 import z from 'zod';
 
-import {ToolCategories} from './categories.js';
-import {defineTool} from './ToolDefinition.js';
+import { ToolCategories } from './categories.js';
+import { defineTool } from './ToolDefinition.js';
+
+export const FILTERABLE_RESOURCE_TYPES = [
+  'document',
+  'stylesheet',
+  'image',
+  'media',
+  'font',
+  'script',
+  'texttrack',
+  'xhr',
+  'fetch',
+  'prefetch',
+  'eventsource',
+  'websocket',
+  'manifest',
+  'signedexchange',
+  'ping',
+  'cspviolationreport',
+  'preflight',
+  'fedcm',
+  'other',
+] as const satisfies readonly ResourceType[];
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
@@ -33,11 +56,18 @@ export const listNetworkRequests = defineTool({
       .describe(
         'Page number to return (0-based). When omitted, returns the first page.',
       ),
+    resourceType: z
+      .array(z.enum(FILTERABLE_RESOURCE_TYPES as any))
+      .optional()
+      .describe(
+        'Filter requests by resource type. When omitted, returns all requests.',
+      ),
   },
   handler: async (request, response) => {
     response.setIncludeNetworkRequests(true, {
       pageSize: request.params.pageSize,
       pageIdx: request.params.pageIdx,
+      resourceTypes: request.params.resourceType,
     });
   },
 });

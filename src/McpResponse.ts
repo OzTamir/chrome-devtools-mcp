@@ -7,28 +7,32 @@ import type {
   ImageContent,
   TextContent,
 } from '@modelcontextprotocol/sdk/types.js';
+import type { ResourceType } from 'puppeteer-core';
 
-import {formatConsoleEvent} from './formatters/consoleFormatter.js';
+import { formatConsoleEvent } from './formatters/consoleFormatter.js';
 import {
   getFormattedHeaderValue,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
-import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
-import type {McpContext} from './McpContext.js';
-import type {ImageContentData, Response} from './tools/ToolDefinition.js';
-import {paginate, type PaginationOptions} from './utils/pagination.js';
+import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
+import type { McpContext } from './McpContext.js';
+import type { ImageContentData, Response } from './tools/ToolDefinition.js';
+import { paginate, type PaginationOptions } from './utils/pagination.js';
 
 export class McpResponse implements Response {
   #includePages = false;
   #includeSnapshot = false;
-  #includeNetworkRequests = false;
   #attachedNetworkRequestUrl?: string;
   #includeConsoleData = false;
   #textResponseLines: string[] = [];
   #formattedConsoleData?: string[];
   #images: ImageContentData[] = [];
-  #networkRequestsPaginationOptions?: PaginationOptions;
+  #networkRequestsOptions?: {
+    include: boolean;
+    pagination?: PaginationOptions;
+    resourceTypes?: ResourceType[];
+  };
 
   setIncludePages(value: boolean): void {
     this.#includePages = value;
@@ -40,17 +44,20 @@ export class McpResponse implements Response {
 
   setIncludeNetworkRequests(
     value: boolean,
-    options?: {pageSize?: number; pageIdx?: number},
+    options?: { pageSize?: number; pageIdx?: number; resourceTypes?: ResourceType[] },
   ): void {
-    this.#includeNetworkRequests = value;
-    if (!value || !options) {
-      this.#networkRequestsPaginationOptions = undefined;
+    if (!value) {
+      this.#networkRequestsOptions = undefined;
       return;
     }
 
-    this.#networkRequestsPaginationOptions = {
-      pageSize: options.pageSize,
-      pageIdx: options.pageIdx,
+    this.#networkRequestsOptions = {
+      include: value,
+      pagination: options?.pageSize || options?.pageIdx ? {
+        pageSize: options.pageSize,
+        pageIdx: options.pageIdx,
+      } : undefined,
+      resourceTypes: options?.resourceTypes,
     };
   }
 
@@ -67,7 +74,7 @@ export class McpResponse implements Response {
   }
 
   get includeNetworkRequests(): boolean {
-    return this.#includeNetworkRequests;
+    return this.#networkRequestsOptions?.include ?? false;
   }
 
   get includeConsoleData(): boolean {
@@ -77,7 +84,7 @@ export class McpResponse implements Response {
     return this.#attachedNetworkRequestUrl;
   }
   get networkRequestsPageIdx(): number | undefined {
-    return this.#networkRequestsPaginationOptions?.pageIdx;
+    return this.#networkRequestsOptions?.pagination?.pageIdx;
   }
 
   appendResponseLine(value: string): void {
@@ -179,25 +186,35 @@ Call browser_handle_dialog to handle it before continuing.`);
 
     response.push(...this.#getIncludeNetworkRequestsData(context));
 
-    if (this.#includeNetworkRequests) {
-      const requests = context.getNetworkRequests();
+    if (this.#networkRequestsOptions?.include) {
+      let requests = context.getNetworkRequests();
+
+      // Apply resource type filtering if specified
+      if (this.#networkRequestsOptions.resourceTypes) {
+        const normalizedTypes = new Set(this.#networkRequestsOptions.resourceTypes);
+        requests = requests.filter(request => {
+          const type = request.resourceType();
+          return normalizedTypes.has(type);
+        });
+      }
+
       response.push('## Network requests');
       if (requests.length) {
         const paginationResult = paginate(
           requests,
-          this.#networkRequestsPaginationOptions,
+          this.#networkRequestsOptions.pagination,
         );
         if (paginationResult.invalidPage) {
           response.push('Invalid page number provided. Showing first page.');
         }
 
-        const {startIndex, endIndex, currentPage, totalPages} =
+        const { startIndex, endIndex, currentPage, totalPages } =
           paginationResult;
         response.push(
           `Showing ${startIndex + 1}-${endIndex} of ${requests.length} (Page ${currentPage + 1} of ${totalPages}).`,
         );
 
-        if (this.#networkRequestsPaginationOptions) {
+        if (this.#networkRequestsOptions.pagination) {
           if (paginationResult.hasNextPage) {
             response.push(`Next page: ${currentPage + 1}`);
           }
