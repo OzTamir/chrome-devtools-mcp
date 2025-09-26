@@ -5,20 +5,20 @@
  */
 
 import logger from 'debug';
-import type { Browser } from 'puppeteer';
+import type {Browser} from 'puppeteer';
 import puppeteer from 'puppeteer';
-import type { HTTPRequest, HTTPResponse } from 'puppeteer-core';
+import type {HTTPRequest, HTTPResponse} from 'puppeteer-core';
 
-import { McpContext } from '../src/McpContext.js';
-import { McpResponse } from '../src/McpResponse.js';
+import {McpContext} from '../src/McpContext.js';
+import {McpResponse} from '../src/McpResponse.js';
 
 let browser: Browser | undefined;
 
 export async function withBrowser(
   cb: (response: McpResponse, context: McpContext) => Promise<void>,
-  options: { debug?: boolean } = {},
+  options: {debug?: boolean} = {},
 ) {
-  const { debug = false } = options;
+  const {debug = false} = options;
   if (!browser) {
     browser = await puppeteer.launch({
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
