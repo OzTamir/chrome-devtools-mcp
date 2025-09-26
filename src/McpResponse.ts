@@ -7,18 +7,18 @@ import type {
   ImageContent,
   TextContent,
 } from '@modelcontextprotocol/sdk/types.js';
-import type {ResourceType} from 'puppeteer-core';
+import type { ResourceType } from 'puppeteer-core';
 
-import {formatConsoleEvent} from './formatters/consoleFormatter.js';
+import { formatConsoleEvent } from './formatters/consoleFormatter.js';
 import {
   getFormattedHeaderValue,
   getShortDescriptionForRequest,
   getStatusFromRequest,
 } from './formatters/networkFormatter.js';
-import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
-import type {McpContext} from './McpContext.js';
-import type {ImageContentData, Response} from './tools/ToolDefinition.js';
-import {paginate, type PaginationOptions} from './utils/pagination.js';
+import { formatA11ySnapshot } from './formatters/snapshotFormatter.js';
+import type { McpContext } from './McpContext.js';
+import type { ImageContentData, Response } from './tools/ToolDefinition.js';
+import { paginate, type PaginationOptions } from './utils/pagination.js';
 
 export class McpResponse implements Response {
   #includePages = false;
@@ -60,9 +60,9 @@ export class McpResponse implements Response {
       pagination:
         options?.pageSize || options?.pageIdx
           ? {
-              pageSize: options.pageSize,
-              pageIdx: options.pageIdx,
-            }
+            pageSize: options.pageSize,
+            pageIdx: options.pageIdx,
+          }
           : undefined,
       resourceTypes: options?.resourceTypes,
     };
@@ -197,7 +197,7 @@ Call browser_handle_dialog to handle it before continuing.`);
       let requests = context.getNetworkRequests();
 
       // Apply resource type filtering if specified
-      if (this.#networkRequestsOptions.resourceTypes) {
+      if (this.#networkRequestsOptions.resourceTypes?.length) {
         const normalizedTypes = new Set(
           this.#networkRequestsOptions.resourceTypes,
         );
@@ -217,7 +217,7 @@ Call browser_handle_dialog to handle it before continuing.`);
           response.push('Invalid page number provided. Showing first page.');
         }
 
-        const {startIndex, endIndex, currentPage, totalPages} =
+        const { startIndex, endIndex, currentPage, totalPages } =
           paginationResult;
         response.push(
           `Showing ${startIndex + 1}-${endIndex} of ${requests.length} (Page ${currentPage + 1} of ${totalPages}).`,
