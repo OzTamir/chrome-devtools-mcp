@@ -4,36 +4,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { ResourceType } from 'puppeteer-core';
+import type {ResourceType} from 'puppeteer-core';
 import z from 'zod';
 
-import { ToolCategories } from './categories.js';
-import { defineTool } from './ToolDefinition.js';
+import {ToolCategories} from './categories.js';
+import {defineTool} from './ToolDefinition.js';
 
-const FILTERABLE_RESOURCE_TYPES: readonly [
-  ResourceType,
-  ...ResourceType[],
-] = [
-    'document',
-    'stylesheet',
-    'image',
-    'media',
-    'font',
-    'script',
-    'texttrack',
-    'xhr',
-    'fetch',
-    'prefetch',
-    'eventsource',
-    'websocket',
-    'manifest',
-    'signedexchange',
-    'ping',
-    'cspviolationreport',
-    'preflight',
-    'fedcm',
-    'other',
-  ];
+const FILTERABLE_RESOURCE_TYPES: readonly [ResourceType, ...ResourceType[]] = [
+  'document',
+  'stylesheet',
+  'image',
+  'media',
+  'font',
+  'script',
+  'texttrack',
+  'xhr',
+  'fetch',
+  'prefetch',
+  'eventsource',
+  'websocket',
+  'manifest',
+  'signedexchange',
+  'ping',
+  'cspviolationreport',
+  'preflight',
+  'fedcm',
+  'other',
+];
 
 export const listNetworkRequests = defineTool({
   name: 'list_network_requests',
@@ -60,9 +57,7 @@ export const listNetworkRequests = defineTool({
         'Page number to return (0-based). When omitted, returns the first page.',
       ),
     resourceTypes: z
-      .array(
-        z.enum(FILTERABLE_RESOURCE_TYPES),
-      )
+      .array(z.enum(FILTERABLE_RESOURCE_TYPES))
       .optional()
       .describe(
         'Filter requests to only return requests of the specified resource types. When omitted or empty, returns all requests.',
